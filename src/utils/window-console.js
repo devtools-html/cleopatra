@@ -80,6 +80,8 @@ export function addDataToWindowObject(
     const profileFlowInfo =
       selectorsForConsole.flow.getProfileFlowInfo(getState());
     const threads = selectorsForConsole.profile.getThreads(getState());
+    const stringTablePerThread =
+      selectorsForConsole.flow.getStringTablePerThread(getState());
     const fullMarkerListPerThread =
       selectorsForConsole.flow.getFullMarkerListPerThread(getState());
     if (markerIndex === null) {
@@ -90,6 +92,7 @@ export function addDataToWindowObject(
         markerIndex,
         profileFlowInfo,
         threads,
+        stringTablePerThread,
         fullMarkerListPerThread
       );
     }
