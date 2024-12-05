@@ -114,6 +114,29 @@ export function getCallNodeInfo(
   return new CallNodeInfoNonInverted(callNodeTable, stackIndexToCallNodeIndex);
 }
 
+function _computeFrameTableInlinedIntoColumn(
+  frameTable: FrameTable
+): Int32Array {
+  const frameCount = frameTable.length;
+  const frameTableInlineDepthCol = frameTable.inlineDepth;
+  const frameTableNativeSymbolCol = frameTable.nativeSymbol;
+
+  const inlinedIntoCol = new Int32Array(frameCount);
+
+  for (let i = 0; i < frameCount; i++) {
+    let inlinedInto = -2;
+    if (frameTableInlineDepthCol[i] > 0) {
+      const nativeSymbol = frameTableNativeSymbolCol[i];
+      if (nativeSymbol !== null) {
+        inlinedInto = nativeSymbol;
+      }
+    }
+    inlinedIntoCol[i] = inlinedInto;
+  }
+
+  return inlinedIntoCol;
+}
+
 type CallNodeTableAndStackMap = {
   callNodeTable: CallNodeTable,
   // IndexIntoStackTable -> IndexIntoCallNodeTable
@@ -134,8 +157,11 @@ export function computeCallNodeTable(
   funcTable: FuncTable,
   defaultCategory: IndexIntoCategoryList
 ): CallNodeTableAndStackMap {
-  return timeCode('getCallNodeInfo', () => {
+  return timeCode('computeCallNodeTable', () => {
     const stackIndexToCallNodeIndex = new Int32Array(stackTable.length);
+
+    const frameTableInlinedIntoCol =
+      _computeFrameTableInlinedIntoColumn(frameTable);
 
     // The callNodeTable components.
     const prefix: Array<IndexIntoCallNodeTable> = [];
@@ -217,10 +243,7 @@ export function computeCallNodeTable(
       const frameIndex = stackTable.frame[stackIndex];
       const categoryIndex = stackTable.category[stackIndex];
       const subcategoryIndex = stackTable.subcategory[stackIndex];
-      const inlinedIntoSymbol =
-        frameTable.inlineDepth[frameIndex] > 0
-          ? (frameTable.nativeSymbol[frameIndex] ?? -2)
-          : -2;
+      const inlinedIntoSymbol = frameTableInlinedIntoCol[frameIndex];
       const funcIndex = frameTable.func[frameIndex];
 
       // Check if the call node for this stack already exists.
