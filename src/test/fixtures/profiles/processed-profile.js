@@ -25,6 +25,7 @@ import {
 
 import type {
   Profile,
+  RawThread,
   Thread,
   ThreadIndex,
   IndexIntoCategoryList,
@@ -52,7 +53,10 @@ import {
   deriveMarkersFromRawMarkerTable,
   IPCMarkerCorrelations,
 } from '../../../profile-logic/marker-data';
-import { getTimeRangeForThread } from '../../../profile-logic/profile-data';
+import {
+  getTimeRangeForThread,
+  computeThreadFromRawThread,
+} from '../../../profile-logic/profile-data';
 import { markerSchemaForTests } from './marker-schema';
 import { GlobalDataCollector } from 'firefox-profiler/profile-logic/process-profile';
 import { getVisualMetrics } from './gecko-profile';
@@ -101,7 +105,7 @@ export type TestDefinedJsTracerEvent = [
 ];
 
 export function addRawMarkersToThread(
-  thread: Thread,
+  thread: RawThread,
   markers: TestDefinedRawMarker[]
 ) {
   const stringTable = thread.stringTable;
@@ -153,7 +157,7 @@ function _replaceUniqueStringFieldValuesWithStringIndexesInMarkerPayload(
 
 // This is used in tests, with TestDefinedMarkers.
 export function addMarkersToThreadWithCorrespondingSamples(
-  thread: Thread,
+  thread: RawThread,
   markers: TestDefinedMarkers
 ) {
   const stringTable = thread.stringTable;
@@ -255,7 +259,7 @@ export function getThreadWithRawMarkers(markers: TestDefinedRawMarker[]) {
  * This can be a little annoying to derive with all of the dependencies,
  * so provide an easy interface to do so here.
  */
-export function getTestFriendlyDerivedMarkerInfo(thread: Thread) {
+export function getTestFriendlyDerivedMarkerInfo(thread: RawThread) {
   return deriveMarkersFromRawMarkerTable(
     thread.markers,
     thread.stringTable,
@@ -477,6 +481,7 @@ export function getProfileWithNamedThreads(threadNames: string[]): Profile {
 
 export type ProfileWithDicts = {
   profile: Profile,
+  derivedThreads: Thread[],
   funcNamesPerThread: Array<string[]>,
   funcNamesDictPerThread: Array<{ [funcName: string]: number }>,
   nativeSymbolsDictPerThread: Array<{ [nativeSymbolName: string]: number }>,
@@ -878,7 +883,7 @@ function _buildThreadFromTextOnlyStacks(
   categories: CategoryList,
   globalDataCollector: GlobalDataCollector,
   sampleTimes: number[] | null
-): Thread {
+): RawThread {
   const thread = getEmptyThread();
 
   const {
@@ -1110,17 +1115,21 @@ export function getProfileWithDicts(profile: Profile): ProfileWithDicts {
     'Expected to find categories'
   ).findIndex((c) => c.name === 'Other');
 
-  const funcNameDicts = profile.threads.map(getFuncNamesDictForThread);
+  const derivedThreads = profile.threads.map((rawThread) =>
+    computeThreadFromRawThread(rawThread)
+  );
+  const funcNameDicts = derivedThreads.map(getFuncNamesDictForThread);
   const funcNamesPerThread = funcNameDicts.map(({ funcNames }) => funcNames);
   const funcNamesDictPerThread = funcNameDicts.map(
     ({ funcNamesDict }) => funcNamesDict
   );
-  const nativeSymbolsDictPerThread = profile.threads.map(
+  const nativeSymbolsDictPerThread = derivedThreads.map(
     getNativeSymbolsDictForThread
   );
 
   return {
     profile,
+    derivedThreads,
     funcNamesPerThread,
     funcNamesDictPerThread,
     nativeSymbolsDictPerThread,
@@ -1395,13 +1404,13 @@ export function getScreenshotTrackProfile() {
  */
 export function addIPCMarkerPairToThreads(
   payload: $Shape<IPCMarkerPayload>,
-  senderThread: Thread,
-  receiverThread: Thread
+  senderThread: RawThread,
+  receiverThread: RawThread
 ) {
   const ipcMarker = (
     direction: 'sending' | 'receiving',
     isParent: boolean,
-    otherThread: Thread
+    otherThread: RawThread
   ) => [
     'IPC',
     payload.startTime,
@@ -1466,7 +1475,7 @@ export function getJsTracerTable(
 
 export function getThreadWithJsTracerEvents(
   events: TestDefinedJsTracerEvent[]
-): Thread {
+): RawThread {
   const thread = getEmptyThread();
   thread.jsTracer = getJsTracerTable(thread.stringTable, events);
 
@@ -1514,7 +1523,7 @@ export function getProfileWithJsTracerEvents(
  * Creates a Counter fixture for a given thread.
  */
 export function getCounterForThread(
-  thread: Thread,
+  thread: RawThread,
   mainThreadIndex: ThreadIndex,
   config: { hasCountNumber: boolean } = {}
 ): Counter {
@@ -1542,7 +1551,7 @@ export function getCounterForThread(
  * Creates a Counter fixture for a given thread with the given samples.
  */
 export function getCounterForThreadWithSamples(
-  thread: Thread,
+  thread: RawThread,
   mainThreadIndex: ThreadIndex,
   samples: {
     time?: number[],
@@ -1592,7 +1601,7 @@ export function getProfileWithEventDelays(
  */
 export function getThreadWithEventDelay(
   userEventDelay?: Milliseconds[]
-): Thread {
+): RawThread {
   const thread = getEmptyThread();
 
   // Creating some empty event delays because they will be filled with the pre-process.
@@ -1980,7 +1989,7 @@ export function markTabIdsAsPrivateBrowsing(
 // /!\ This algorithm is good enough for tests, but it's not correct for
 // general cases.
 function getStackIndexForCallNodePath(
-  { stackTable, frameTable }: Thread,
+  { stackTable, frameTable }: RawThread,
   callNodePath: CallNodePath
 ): IndexIntoStackTable {
   let currentFuncInCallNodePath = 0;
@@ -2024,7 +2033,7 @@ function getStackIndexForCallNodePath(
  *                        get all passed innerWindowIDs
  */
 export function addInnerWindowIdToStacks(
-  thread: Thread,
+  thread: RawThread,
   listOfOperations: Array<{ innerWindowID: number, callNodes: CallNodePath[] }>,
   callNodesToDupe?: CallNodePath[]
 ) {
@@ -2149,7 +2158,7 @@ export function getProfileWithThreadCPUDelta(
 export function getThreadWithThreadCPUDelta(
   userThreadCPUDelta?: Array<number | null>,
   interval: Milliseconds = 1
-): Thread {
+): RawThread {
   const thread = getEmptyThread();
   const samplesLength = userThreadCPUDelta ? userThreadCPUDelta.length : 10;
 
