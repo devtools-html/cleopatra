@@ -15,6 +15,7 @@ import {
 import { mergeProfilesForDiffing } from '../../../profile-logic/merge-compare';
 import { stateFromLocation } from '../../../app-logic/url-handling';
 import { StringTable } from '../../../utils/string-table';
+import { computeThreadFromRawThread } from '../utils';
 import { ensureExists } from '../../../utils/flow';
 import {
   INTERVAL,
@@ -53,10 +54,7 @@ import {
   deriveMarkersFromRawMarkerTable,
   IPCMarkerCorrelations,
 } from '../../../profile-logic/marker-data';
-import {
-  getTimeRangeForThread,
-  computeThreadFromRawThread,
-} from '../../../profile-logic/profile-data';
+import { getTimeRangeForThread } from '../../../profile-logic/profile-data';
 import { markerSchemaForTests } from './marker-schema';
 import { GlobalDataCollector } from 'firefox-profiler/profile-logic/process-profile';
 import { getVisualMetrics } from './gecko-profile';
@@ -108,7 +106,7 @@ export function addRawMarkersToThread(
   thread: RawThread,
   markers: TestDefinedRawMarker[]
 ) {
-  const stringTable = thread.stringTable;
+  const stringTable = StringTable.withBackingArray(thread.stringArray);
   const markersTable = thread.markers;
 
   for (const { name, startTime, endTime, phase, category, data } of markers) {
@@ -160,7 +158,7 @@ export function addMarkersToThreadWithCorrespondingSamples(
   thread: RawThread,
   markers: TestDefinedMarkers
 ) {
-  const stringTable = thread.stringTable;
+  const stringTable = StringTable.withBackingArray(thread.stringArray);
   const markersTable = thread.markers;
   const allTimes = new Set();
 
@@ -262,7 +260,7 @@ export function getThreadWithRawMarkers(markers: TestDefinedRawMarker[]) {
 export function getTestFriendlyDerivedMarkerInfo(thread: RawThread) {
   return deriveMarkersFromRawMarkerTable(
     thread.markers,
-    thread.stringTable,
+    thread.stringArray,
     thread.tid || 0,
     getTimeRangeForThread(thread, 1),
     new IPCMarkerCorrelations()
@@ -888,13 +886,14 @@ function _buildThreadFromTextOnlyStacks(
 
   const {
     funcTable,
-    stringTable,
+    stringArray,
     frameTable,
     stackTable,
     samples,
     resourceTable,
     nativeSymbols,
   } = thread;
+  const stringTable = StringTable.withBackingArray(stringArray);
 
   // Create the FuncTable.
   funcNames.forEach((funcName) => {
@@ -1477,7 +1476,8 @@ export function getThreadWithJsTracerEvents(
   events: TestDefinedJsTracerEvent[]
 ): RawThread {
   const thread = getEmptyThread();
-  thread.jsTracer = getJsTracerTable(thread.stringTable, events);
+  const stringTable = StringTable.withBackingArray(thread.stringArray);
+  thread.jsTracer = getJsTracerTable(stringTable, events);
 
   let endOfEvents = 0;
   for (const [, , end] of events) {
