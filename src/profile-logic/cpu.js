@@ -37,15 +37,33 @@ function _computeMaxVariableCPUCyclesPerMs(threads: RawThread[]): number {
 
     // Ignore the first CPU delta value; it's meaningless because there is no
     // previous sample.
-    for (let i = 1; i < samples.length; i++) {
-      const sampleTimeDeltaInMs = samples.time[i] - samples.time[i - 1];
-      if (sampleTimeDeltaInMs !== 0) {
-        const cpuDeltaPerMs = (threadCPUDelta[i] || 0) / sampleTimeDeltaInMs;
-        maxThreadCPUDeltaPerMs = Math.max(
-          maxThreadCPUDeltaPerMs,
-          cpuDeltaPerMs
-        );
+    const { time: samplesTimeCol, timeDeltas: samplesTimeDeltasCol } = samples;
+    if (samplesTimeCol !== undefined) {
+      for (let i = 1; i < samples.length; i++) {
+        const sampleTimeDeltaInMs = samplesTimeCol[i] - samplesTimeCol[i - 1];
+        if (sampleTimeDeltaInMs !== 0) {
+          const cpuDeltaPerMs = (threadCPUDelta[i] || 0) / sampleTimeDeltaInMs;
+          maxThreadCPUDeltaPerMs = Math.max(
+            maxThreadCPUDeltaPerMs,
+            cpuDeltaPerMs
+          );
+        }
       }
+    } else if (samplesTimeDeltasCol !== undefined) {
+      for (let i = 1; i < samples.length; i++) {
+        const sampleTimeDeltaInMs = samplesTimeDeltasCol[i];
+        if (sampleTimeDeltaInMs !== 0) {
+          const cpuDeltaPerMs = (threadCPUDelta[i] || 0) / sampleTimeDeltaInMs;
+          maxThreadCPUDeltaPerMs = Math.max(
+            maxThreadCPUDeltaPerMs,
+            cpuDeltaPerMs
+          );
+        }
+      }
+    } else {
+      throw new Error(
+        'samples table must always have a time or a timeDeltas column'
+      );
     }
   }
 

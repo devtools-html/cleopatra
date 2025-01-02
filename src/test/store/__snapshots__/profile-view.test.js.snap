@@ -5223,6 +5223,7 @@ Object {
       0,
     ],
     "length": 57,
+    "responsiveness": undefined,
     "stack": Array [
       null,
       null,
@@ -5282,6 +5283,8 @@ Object {
       null,
       null,
     ],
+    "threadCPUDelta": undefined,
+    "threadId": undefined,
     "time": Array [
       0,
       1,
