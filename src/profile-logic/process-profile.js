@@ -19,6 +19,7 @@ import {
 } from './data-structures';
 import { immutableUpdate, ensureExists, coerce } from '../utils/flow';
 import { verifyMagic, SIMPLEPERF as SIMPLEPERF_MAGIC } from '../utils/magic';
+import { base64StringToArrayBuffer } from '../utils/value-summaries';
 import { attemptToUpgradeProcessedProfileThroughMutation } from './processed-profile-versioning';
 import { upgradeGeckoProfileToCurrentVersion } from './gecko-profile-versioning';
 import {
@@ -967,6 +968,10 @@ function _processSamples(geckoSamples: GeckoSampleStruct): RawSamplesTable {
     }
   }
 
+  if (geckoSamples.argv) {
+    samples.argv = geckoSamples.argv;
+  }
+
   if (geckoSamples.eventDelay) {
     samples.eventDelay = geckoSamples.eventDelay;
   } else if (geckoSamples.responsiveness) {
@@ -1202,6 +1207,17 @@ function _processThread(
   if (nativeAllocations) {
     // Only add the Native allocations if they exist.
     newThread.nativeAllocations = nativeAllocations;
+  }
+
+  if (thread.values) {
+    var buffer = base64StringToArrayBuffer(thread.values);
+    if (buffer) {
+      newThread.argvBuffer = buffer;
+    }
+  }
+
+  if (thread.shapes) {
+    newThread.shapes = thread.shapes;
   }
 
   function processJsTracer() {

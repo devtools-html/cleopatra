@@ -1673,6 +1673,13 @@ export function filterThreadSamplesToRange(
     );
   }
 
+  if (samples.argv) {
+    newSamples.argv = samples.argv.slice(
+      beginSampleIndex,
+      endSampleIndex
+    );
+  }
+
   if (samples.threadId) {
     newSamples.threadId = samples.threadId.slice(
       beginSampleIndex,
@@ -1799,6 +1806,13 @@ export function filterRawThreadSamplesToRange(
     );
   }
 
+  if (samples.argv) {
+    newSamples.argv = samples.argv.slice(
+      beginSampleIndex,
+      endSampleIndex
+    );
+  }
+
   if (samples.threadId) {
     newSamples.threadId = samples.threadId.slice(
       beginSampleIndex,
@@ -1906,6 +1920,10 @@ export function filterCounterSamplesToRange(
       ? samples.number.slice(beginSampleIndex, endSampleIndex)
       : undefined,
   };
+
+  if (samples.argv) {
+    newCounter.argv = samples.argv.slice(beginSampleIndex, endSampleIndex);
+  }
 
   return newCounter;
 }
@@ -2345,6 +2363,7 @@ export function computeSamplesTableFromRawSamplesTable(
   const {
     responsiveness,
     eventDelay,
+    argv,
     stack,
     weight,
     weightType,
@@ -2371,6 +2390,7 @@ export function computeSamplesTableFromRawSamplesTable(
     // These fields are copied from the raw samples table:
     responsiveness,
     eventDelay,
+    argv,
     stack,
     weight,
     weightType,
@@ -2417,6 +2437,8 @@ export function createThreadFromDerivedTables(
     jsTracer,
     isPrivateBrowsing,
     userContextId,
+    argvBuffer,
+    shapes,
   } = rawThread;
 
   const thread: Thread = {
@@ -2445,6 +2467,8 @@ export function createThreadFromDerivedTables(
     jsTracer,
     isPrivateBrowsing,
     userContextId,
+    argvBuffer,
+    shapes,
 
     // These fields are derived:
     samples,

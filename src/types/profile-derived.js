@@ -132,6 +132,7 @@ export type SamplesTable = {|
   // This property isn't present in normal threads. However it's present for
   // merged threads, so that we know the origin thread for these samples.
   threadId?: Tid[],
+  argv?: Array<number | null>,
   length: number,
 |};
 
