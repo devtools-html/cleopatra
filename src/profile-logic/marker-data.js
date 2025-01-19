@@ -15,7 +15,6 @@ import {
   INTERVAL_END,
 } from 'firefox-profiler/app-logic/constants';
 import {
-  getMarkerSchemaName,
   getSchemaFromMarker,
   markerPayloadMatchesSearch,
 } from './marker-schema';
@@ -225,11 +224,7 @@ function positiveFilterMarker(
     }
 
     // Now check the schema for the marker payload for searchable
-    const markerSchema = getSchemaFromMarker(
-      markerSchemaByName,
-      marker.name,
-      marker.data
-    );
+    const markerSchema = getSchemaFromMarker(markerSchemaByName, marker.data);
     if (
       markerSchema &&
       markerPayloadMatchesSearch(markerSchema, marker, stringTable, test)
@@ -291,11 +286,7 @@ function negativeFilterMarker(
     }
 
     // Now check the schema for the marker payload for searchable
-    const markerSchema = getSchemaFromMarker(
-      markerSchemaByName,
-      marker.name,
-      marker.data
-    );
+    const markerSchema = getSchemaFromMarker(markerSchemaByName, marker.data);
 
     if (
       markerSchema &&
@@ -1286,14 +1277,12 @@ export function getAllowMarkersWithNoSchema(
     const { data } = marker;
 
     if (!data) {
-      // Keep the marker if there is payload.
+      // Keep the marker if there is no payload.
       return true;
     }
 
     if (!markerSchemaByName[data.type]) {
-      // Keep the marker if there is no schema. Note that this function doesn't use
-      // the getMarkerSchemaName function, as that function attempts to find a
-      // marker schema name in a very permissive manner. In the marker chart
+      // Keep the marker if there is no schema. In the marker chart
       // and marker table, most likely we want to show everything.
       return true;
     }
@@ -1527,9 +1516,8 @@ export function filterMarkerByDisplayLocation(
       return additionalResult;
     }
 
-    return markerTypes.has(
-      getMarkerSchemaName(markerSchemaByName, marker.name, marker.data)
-    );
+    const schemaName = marker.data ? (marker.data.type ?? null) : null;
+    return schemaName !== null && markerTypes.has(schemaName);
   });
 }
 

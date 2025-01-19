@@ -298,11 +298,8 @@ function sanitizeThreadPII(
 
       if (currentMarker && PIIToBeRemoved.shouldRemoveUrls) {
         // Use the schema to find some properties that need to be sanitized.
-        const markerNameIndex = markerTable.name[i];
-        const markerName = thread.stringArray[markerNameIndex];
         const markerSchema = getSchemaFromMarker(
           markerSchemaByName,
-          markerName,
           currentMarker
         );
         if (markerSchema) {

@@ -335,23 +335,7 @@ Object {
           "marker-table",
           "timeline-overview",
         ],
-        "name": "Paint",
-      },
-      Object {
-        "data": Array [
-          Object {
-            "format": "string",
-            "key": "category",
-            "label": "Type",
-            "searchable": true,
-          },
-        ],
-        "display": Array [
-          "marker-chart",
-          "marker-table",
-          "timeline-overview",
-        ],
-        "name": "Navigation",
+        "name": "tracing",
       },
       Object {
         "data": Array [
@@ -403,20 +387,13 @@ Object {
         "tooltipLabel": "IPC — {marker.data.niceDirection}",
       },
       Object {
-        "data": Array [
-          Object {
-            "format": "string",
-            "key": "name",
-            "label": "Tick Reasons",
-            "searchable": true,
-          },
-        ],
+        "data": Array [],
         "display": Array [
           "marker-chart",
           "marker-table",
           "timeline-overview",
         ],
-        "name": "RefreshDriverTick",
+        "name": "VisibleInTimelineOverview",
       },
       Object {
         "data": Array [
@@ -457,7 +434,7 @@ Object {
     "oscpu": "",
     "physicalCPUs": 0,
     "platform": "",
-    "preprocessedProfileVersion": 51,
+    "preprocessedProfileVersion": 52,
     "processType": 0,
     "product": "Firefox",
     "sourceURL": "",
@@ -983,12 +960,24 @@ Object {
           0,
         ],
         "data": Array [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
+          Object {
+            "type": "A",
+          },
+          Object {
+            "type": "B",
+          },
+          Object {
+            "type": "C",
+          },
+          Object {
+            "type": "D",
+          },
+          Object {
+            "type": "E",
+          },
+          Object {
+            "type": "F",
+          },
           Object {
             "URI": "https://mozilla.org",
             "endTime": 6.5,
@@ -1640,12 +1629,24 @@ Array [
         0,
       ],
       "data": Array [
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
+        Object {
+          "type": "A",
+        },
+        Object {
+          "type": "B",
+        },
+        Object {
+          "type": "C",
+        },
+        Object {
+          "type": "D",
+        },
+        Object {
+          "type": "E",
+        },
+        Object {
+          "type": "F",
+        },
         Object {
           "URI": "https://mozilla.org",
           "endTime": 6.5,
@@ -1791,7 +1792,9 @@ exports[`snapshots of selectors/profile matches the last stored run of markerThr
 Array [
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "D",
+    },
     "end": null,
     "name": "D",
     "start": 3,
@@ -1799,7 +1802,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "E",
+    },
     "end": null,
     "name": "E",
     "start": 4,
@@ -1807,7 +1812,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "F",
+    },
     "end": null,
     "name": "F",
     "start": 5,
@@ -1858,7 +1865,9 @@ exports[`snapshots of selectors/profile matches the last stored run of markerThr
 Array [
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "A",
+    },
     "end": null,
     "name": "A",
     "start": 0,
@@ -1866,7 +1875,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "B",
+    },
     "end": null,
     "name": "B",
     "start": 1,
@@ -1874,7 +1885,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "C",
+    },
     "end": null,
     "name": "C",
     "start": 2,
@@ -1882,7 +1895,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "D",
+    },
     "end": null,
     "name": "D",
     "start": 3,
@@ -1890,7 +1905,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "E",
+    },
     "end": null,
     "name": "E",
     "start": 4,
@@ -1898,7 +1915,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "F",
+    },
     "end": null,
     "name": "F",
     "start": 5,
@@ -2018,7 +2037,9 @@ exports[`snapshots of selectors/profile matches the last stored run of markerThr
 Array [
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "D",
+    },
     "end": null,
     "name": "D",
     "start": 3,
@@ -2026,7 +2047,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "E",
+    },
     "end": null,
     "name": "E",
     "start": 4,
@@ -2034,7 +2057,9 @@ Array [
   },
   Object {
     "category": 0,
-    "data": null,
+    "data": Object {
+      "type": "F",
+    },
     "end": null,
     "name": "F",
     "start": 5,
