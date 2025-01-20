@@ -7,6 +7,7 @@
 import { assertExhaustiveCheck } from 'firefox-profiler/utils/flow';
 
 import type {
+  RawThread,
   Thread,
   Milliseconds,
   SampleUnits,
@@ -22,7 +23,7 @@ import type {
  * anyway, because if the unit is 'variable CPU cycles' then we don't do any
  * clamping.
  */
-function _computeMaxVariableCPUCyclesPerMs(threads: Thread[]): number {
+function _computeMaxVariableCPUCyclesPerMs(threads: RawThread[]): number {
   let maxThreadCPUDeltaPerMs = 0;
   for (let threadIndex = 0; threadIndex < threads.length; threadIndex++) {
     const { samples } = threads[threadIndex];
@@ -36,15 +37,33 @@ function _computeMaxVariableCPUCyclesPerMs(threads: Thread[]): number {
 
     // Ignore the first CPU delta value; it's meaningless because there is no
     // previous sample.
-    for (let i = 1; i < samples.length; i++) {
-      const sampleTimeDeltaInMs = samples.time[i] - samples.time[i - 1];
-      if (sampleTimeDeltaInMs !== 0) {
-        const cpuDeltaPerMs = (threadCPUDelta[i] || 0) / sampleTimeDeltaInMs;
-        maxThreadCPUDeltaPerMs = Math.max(
-          maxThreadCPUDeltaPerMs,
-          cpuDeltaPerMs
-        );
+    const { time: samplesTimeCol, timeDeltas: samplesTimeDeltasCol } = samples;
+    if (samplesTimeCol !== undefined) {
+      for (let i = 1; i < samples.length; i++) {
+        const sampleTimeDeltaInMs = samplesTimeCol[i] - samplesTimeCol[i - 1];
+        if (sampleTimeDeltaInMs !== 0) {
+          const cpuDeltaPerMs = (threadCPUDelta[i] || 0) / sampleTimeDeltaInMs;
+          maxThreadCPUDeltaPerMs = Math.max(
+            maxThreadCPUDeltaPerMs,
+            cpuDeltaPerMs
+          );
+        }
       }
+    } else if (samplesTimeDeltasCol !== undefined) {
+      for (let i = 1; i < samples.length; i++) {
+        const sampleTimeDeltaInMs = samplesTimeDeltasCol[i];
+        if (sampleTimeDeltaInMs !== 0) {
+          const cpuDeltaPerMs = (threadCPUDelta[i] || 0) / sampleTimeDeltaInMs;
+          maxThreadCPUDeltaPerMs = Math.max(
+            maxThreadCPUDeltaPerMs,
+            cpuDeltaPerMs
+          );
+        }
+      }
+    } else {
+      throw new Error(
+        'samples table must always have a time or a timeDeltas column'
+      );
     }
   }
 
